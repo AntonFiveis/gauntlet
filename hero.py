@@ -1,4 +1,5 @@
 import pygame
+from bullet import Bullet
 
 heroes = pygame.image.load('images/entities.png')
 
@@ -29,12 +30,12 @@ class Hero:
     def __init__(self, type, x, y):
         # warrior
         if type == 0:
-            self.hp = 100
-            self.speed = 6
+            self.hp = 300
+            self.speed = 8
         # valk
         elif type == 1:
             self.hp = 200
-            self.speed = 6
+            self.speed = 7
         # wizard
         elif type == 2:
             self.hp = 200
@@ -42,11 +43,11 @@ class Hero:
         # rogue
         elif type == 3:
             self.hp = 200
-            self.speed = 6
+            self.speed = 9
         # ghost
         elif type == 4:
             self.hp = 200
-            self.speed = 4
+            self.speed = 3
         # demon
         elif type == 5:
             self.hp = 200
@@ -54,15 +55,15 @@ class Hero:
         # big BOOOOYYYYYYYYYY
         elif type == 6:
             self.hp = 200
-            self.speed = 4
+            self.speed = 5
         # rogue
         elif type == 7:
             self.hp = 200
-            self.speed = 4
+            self.speed = 5
         # rogue
         elif type == 8:
             self.hp = 200
-            self.speed = 4
+            self.speed = 5
         self.x_change = 0
         self.y_change = 0
         self.type = type
@@ -98,10 +99,11 @@ class Hero:
         self.y += self.y_change
 
     def display(self, screen):
-        screen.blit(heroes, (self.x, self.y), (32 * (self.sprite//10 * 8 + self.direction), self.type * 32, 32, 32))
+        screen.blit(heroes, (self.x, self.y), (32 * (self.sprite // 10 * 8 + self.direction), self.type * 32, 32, 32))
 
     def shoot(self):
-        print('shoot')
+        if self.type < 4 or self.type == 5 or self.type == 7:
+            return Bullet(self.x, self.y, self.type, self.direction)
 
     def setXChange(self, x_change):
         if x_change == 0:
