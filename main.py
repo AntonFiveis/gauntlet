@@ -1,5 +1,7 @@
 import pygame
+from hero import Hero
 
+fps = 60
 pygame.init()
 heroIcon = pygame.image.load('images/gauntlet.png')
 heroes = pygame.image.load("images/entities.png")
@@ -10,18 +12,15 @@ x, y = 200, 200
 ex, ey = 0, 0
 xChange, yChange = 0, 0
 screen.fill((0, 0, 0))
-enemySpeed = 0.07
-heroSpeed = 0.1
-sprite = 0
 
+hero = Hero(3, 250, 250)
+enemy = Hero(7, 0, 0)
 
-def displayHero(heroX, heroY):
-    screen.blit(heroes, (heroX, heroY), ((sprite//1000+1)*32*8, 0, 32, 32))
-
-
-def displayEnemy(enemyX, enemyY):
-    screen.blit(heroes, (enemyX, enemyY), (0, 0, 32, 32))
-
+def update():
+    hero.update()
+    hero.display(screen)
+    enemy.update()
+    enemy.display(screen)
 
 # def shoot(shootX, shoo)
 running = True
@@ -32,32 +31,33 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_w:
-                yChange = -heroSpeed
+                hero.setYChange(-1)
             if event.key == pygame.K_s:
-                yChange = heroSpeed
+                hero.setYChange(1)
             if event.key == pygame.K_d:
-                xChange = heroSpeed
+                hero.setXChange(1)
             if event.key == pygame.K_a:
-                xChange = -heroSpeed
+                hero.setXChange(-1)
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_w or event.key == pygame.K_s:
-                yChange = 0
+                hero.setYChange(0)
             if event.key == pygame.K_d or event.key == pygame.K_a:
-                xChange = 0
-    if ex < x:
-        ex += enemySpeed
-    elif ex > x:
-        ex -= enemySpeed
-    if ey < y:
-        ey += enemySpeed
-    elif ey > y:
-        ey -= enemySpeed
-    sprite += 1
-    if sprite > 2000:
-        sprite = 0
-    print(sprite)
-    x += xChange
-    y += yChange
-    displayHero(x, y)
-    displayEnemy(ex, ey)
+                hero.setXChange(0)
+    if enemy.x < hero.x+8:
+        enemy.setXChange(1)
+    elif enemy.x > hero.x-8:
+        enemy.setXChange(-1)
+    else:
+        enemy.setXChange(0)
+    if enemy.y < hero.y-8:
+        enemy.setYChange(1)
+    elif enemy.y > hero.y+8:
+        enemy.setYChange(-1)
+    else:
+        enemy.setYChange(0)
+    enemy.update()
+    enemy.display(screen)
+    hero.update()
+    hero.display(screen)
     pygame.display.update()
+    pygame.time.delay(1000 // fps)
