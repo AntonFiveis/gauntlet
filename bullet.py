@@ -18,18 +18,9 @@ class Bullet(pygame.sprite.Sprite):
             self.y_change = self.speed
         elif direction < 2 or direction == 7:
             self.y_change = -self.speed
-        self.image = bullets.subsurface((32 * (3 * 8 + self.direction), self.type * 32, 32, 32))
-        self.rect = self.image.get_rect(topleft=(x, y))
+        self.image = bullets.subsurface((32 * (3 * 8 + self.direction) + 4, self.type * 32 + 4, 24, 24))
+        self.rect = self.image.get_rect(topleft=(x + 4, y + 4))
 
     def update(self):
         self.rect.x += self.x_change
         self.rect.y += self.y_change
-        # if self.x > 800:
-        #     self.x = 0
-        # if self.y > 600:
-        #     self.y = 0
-        # if self.x < 0:
-        #     self.x = 800
-        # if self.y < 0:
-        #     self.y = 600
-

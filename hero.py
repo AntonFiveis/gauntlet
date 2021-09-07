@@ -32,39 +32,39 @@ class Hero(pygame.sprite.Sprite):
         # warrior
         if type == 0:
             self.hp = 300
-            self.speed = 8
+            self.speed = 3
         # valk
         elif type == 1:
             self.hp = 200
-            self.speed = 7
+            self.speed = 3
         # wizard
         elif type == 2:
             self.hp = 200
-            self.speed = 6
+            self.speed = 3
         # rogue
         elif type == 3:
             self.hp = 200
-            self.speed = 9
+            self.speed = 3
         # ghost
         elif type == 4:
-            self.hp = 200
-            self.speed = 3
+            self.hp = 10
+            self.speed = 1
         # demon
         elif type == 5:
-            self.hp = 200
-            self.speed = 4
+            self.hp = 20
+            self.speed = 1
         # big BOOOOYYYYYYYYYY
         elif type == 6:
-            self.hp = 200
-            self.speed = 5
+            self.hp = 30
+            self.speed = 2
         # rogue 1
         elif type == 7:
-            self.hp = 200
-            self.speed = 5
+            self.hp = 30
+            self.speed = 2
         # rogue 2
         elif type == 8:
-            self.hp = 200
-            self.speed = 5
+            self.hp = 30
+            self.speed = 2
         self.x_change = 0
         self.y_change = 0
         self.type = type
@@ -88,6 +88,7 @@ class Hero(pygame.sprite.Sprite):
             self.sprite = 0
         self.image = entities.subsurface((
             32 * (self.sprite // 10 * 8 + self.direction), self.type * 32, 32, 32))
+        self.image.fill((0,0,0))
 
     def update(self):
         self.changeSprite()
