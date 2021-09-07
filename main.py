@@ -10,57 +10,71 @@ backgroungs = pygame.image.load('images/backgrounds.png')
 width, height = 800, 600
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_icon(heroIcon)
+
+
 hero = Hero(3, 250, 250)
-enemies = [Hero(7, 0, 0), Hero(6, 600, 0), Hero(5, 0, 500), Hero(4, 600, 500)]
-bullets = []
-# enemies = []
+enemies = pygame.sprite.Group()
+enemies.add(Hero(7, 50, 0))
+enemies.add(Hero(5, 0, 50))
+enemies.add(Hero(6, 0, 80))
+enemies.add(Hero(4, 90, 0))
+bullets = pygame.sprite.Group()
 delay = 30
 clock = pygame.time.Clock()
+walls = []
 map = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,0,0,0,0,1,0,1,1,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,1,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
-def update():
-    for i in range(len(map)):
-        for j in range(len(map[i])):
-            screen.blit(backgroungs,(32*j, 32*i), (32,0,32,32))
-            if map[i][j]!=0:
-                if i==0 or i==len(map)-1:
-                    screen.blit(entities, (32*j, 32*i), (10*32,9*32,32,32 ))
-                else:
-                    screen.blit(entities, (32*j, 32*i), (11*32,9*32,32,32 ))
+map_surface = pygame.Surface((32*len(map[0]), 32*len(map)))
+for i in range(len(map)):
+    for j in range(len(map[i])):
+        map_surface.blit(backgroungs, (32 * j, 32 * i), (32, 0, 32, 32))
+        if map[i][j] != 0:
+            walls.append(pygame.Rect((32 * j, 32 * i,32,32)))
+            if i == 0 or i == len(map) - 1:
+                map_surface.blit(entities, (32 * j, 32 * i), (10 * 32, 9 * 32, 32, 32))
+            elif j == 0 or j == len(map[i]):
+                map_surface.blit(entities, (32 * j, 32 * i), (11 * 32, 9 * 32, 32, 32))
+            else:
+                map_surface.blit(entities, (32 * j, 32 * i), (11 * 32, 9 * 32, 32, 32))
+                map_surface.blit(entities, (32 * j, 32 * i), (10 * 32, 9 * 32, 32, 32))
 
+
+
+def update():
+    screen.blit(map_surface,(0,0))
     hero.update()
-    hero.display(screen)
+    screen.blit(hero.image, hero.rect)
     for enemy in enemies:
         randint = random.randint(0, 100)
         if randint > 98:
             bullet = enemy.shoot()
             if bullet:
-                bullets.append(enemy.shoot())
-        enemy.update()
-        enemy.display(screen)
+                bullets.add(enemy.shoot())
+    enemies.update()
+    enemies.draw(screen)
+    bullets.update()
     for bullet in bullets:
-        bullet.update()
-        bullet.display(screen)
-        if bullet.x > width+16 or bullet.y > height+16 or bullet.x < -16 or bullet.y < -16:
-            bullets.remove(bullet)
+        if bullet.rect.x > width + 16 or bullet.rect.y > height + 16 or bullet.rect.x < -16 or bullet.rect.y < -16:
+            bullet.kill()
+    bullets.draw(screen)
     pygame.display.update()
 
 
@@ -82,22 +96,22 @@ while running:
             if event.key == pygame.K_a:
                 hero.setXChange(-1)
             if event.key == pygame.K_SPACE:
-                bullets.append(hero.shoot())
+                bullets.add(hero.shoot())
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_w or event.key == pygame.K_s:
                 hero.setYChange(0)
             if event.key == pygame.K_d or event.key == pygame.K_a:
                 hero.setXChange(0)
     for enemy in enemies:
-        if enemy.x < hero.x + 8:
+        if enemy.rect.x < hero.rect.x + 8:
             enemy.setXChange(1)
-        elif enemy.x > hero.x - 8:
+        elif enemy.rect.x > hero.rect.x - 8:
             enemy.setXChange(-1)
         else:
             enemy.setXChange(0)
-        if enemy.y < hero.y - 8:
+        if enemy.rect.y < hero.rect.y - 8:
             enemy.setYChange(1)
-        elif enemy.y > hero.y + 8:
+        elif enemy.rect.y > hero.rect.y + 8:
             enemy.setYChange(-1)
         else:
             enemy.setYChange(0)

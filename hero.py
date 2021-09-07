@@ -1,7 +1,7 @@
 import pygame
 from bullet import Bullet
 
-heroes = pygame.image.load('images/entities.png')
+entities = pygame.image.load('images/entities.png')
 
 
 def calculate_direction(x_change, y_change):
@@ -26,8 +26,9 @@ def calculate_direction(x_change, y_change):
             return 5
 
 
-class Hero:
+class Hero(pygame.sprite.Sprite):
     def __init__(self, type, x, y):
+        pygame.sprite.Sprite.__init__(self)
         # warrior
         if type == 0:
             self.hp = 300
@@ -56,21 +57,22 @@ class Hero:
         elif type == 6:
             self.hp = 200
             self.speed = 5
-        # rogue
+        # rogue 1
         elif type == 7:
             self.hp = 200
             self.speed = 5
-        # rogue
+        # rogue 2
         elif type == 8:
             self.hp = 200
             self.speed = 5
         self.x_change = 0
         self.y_change = 0
         self.type = type
-        self.x = x
-        self.y = y
         self.sprite = 0
         self.direction = 4
+        self.image = entities.subsurface((
+            32 * (self.sprite // 10 * 8 + self.direction), self.type * 32, 32, 32))
+        self.rect = self.image.get_rect(topleft=(x, y))
 
     def changeSprite(self):
         if self.x_change != 0 or self.y_change != 0:
@@ -84,6 +86,8 @@ class Hero:
                 self.direction = direction
         else:
             self.sprite = 0
+        self.image = entities.subsurface((
+            32 * (self.sprite // 10 * 8 + self.direction), self.type * 32, 32, 32))
 
     def update(self):
         self.changeSprite()
@@ -95,15 +99,12 @@ class Hero:
             self.y_change = self.speed
         elif self.direction < 2 or self.direction == 7:
             self.y_change = -self.speed
-        self.x += self.x_change
-        self.y += self.y_change
-
-    def display(self, screen):
-        screen.blit(heroes, (self.x, self.y), (32 * (self.sprite // 10 * 8 + self.direction), self.type * 32, 32, 32))
+        self.rect.x += self.x_change
+        self.rect.y += self.y_change
 
     def shoot(self):
         if self.type < 4 or self.type == 5 or self.type == 7:
-            return Bullet(self.x, self.y, self.type, self.direction)
+            return Bullet(self.rect.x, self.rect.y, self.type, self.direction)
 
     def setXChange(self, x_change):
         if x_change == 0:
