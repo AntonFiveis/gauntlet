@@ -12,6 +12,9 @@ heroIcon = pygame.image.load('images/gauntlet.png')
 entities = pygame.image.load('images/entities.png')
 backgroungs = pygame.image.load('images/backgrounds.png')
 
+pygame.mixer.music.load("background.wav")
+pygame.mixer.music.play(-1)
+
 width, height = 1280, 720
 screen = pygame.display.set_mode((width, height))
 running = True
