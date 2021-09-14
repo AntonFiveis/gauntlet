@@ -128,11 +128,11 @@ def random_map():
                 letter = random.randint(0, 100)
                 if letter < 80:
                     letter = ' '
-                elif letter < 85:
+                elif letter < 82:
                     letter = 'k'
-                elif letter < 94:
+                elif letter < 97:
                     letter = 'w'
-                elif letter < 95:
+                elif letter < 98:
                     letter = 'E'
                 elif letter <= 100:
                     letter = 'g'
