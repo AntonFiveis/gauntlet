@@ -3,6 +3,7 @@ from hero import Hero
 from gate import Gate
 from item import Item
 from spawner import Spawner
+import time
 import random
 
 pygame.init()
@@ -20,7 +21,11 @@ screen = pygame.display.set_mode((width, height))
 running = True
 pygame.display.set_icon(heroIcon)
 
+best_time = [10**8,10**8,10**8]
+
+count = 0
 hero_type = -1
+finding_type = -1
 keys = 0
 score = 0
 potions = 0
@@ -38,7 +43,8 @@ clock = pygame.time.Clock()
 
 while hero_type == -1 and running:
 
-    screen.blit(f.render('Choose your hero :0-warrior,1-valk,2-wizard,3-rogue' , 1, (255, 255, 255)), (width//2-250, height//2))
+    screen.blit(f.render('Choose your hero :0-warrior,1-valk,2-wizard,3-rogue', 1, (255, 255, 255)),
+                (width // 2 - 250, height // 2))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -54,9 +60,9 @@ while hero_type == -1 and running:
     pygame.display.update()
     clock.tick(fps)
 walls = []
-Map = [[
+Map = [[],[
     'wwwwwwwwwwwwwwwwwwww',
-    'wh     k wE        wwwwwwww',
+    'wh     k w E       wwwwwwww',
     'w        w      G       www',
     'wwwwwwlllw              www',
     'ws  B    wwwwwllllwwwwwwwww',
@@ -109,6 +115,37 @@ Map = [[
     ]]
 
 
+def random_map():
+    default_map = ['' for i in range(13)]
+    for j in range(13):
+        for i in range(28):
+            letter = ' '
+            if i == 0 or j ==0 or i==27 or j==12:
+                letter = 'w'
+            elif i==1 and j==1:
+                letter = 'h'
+            else:
+                letter = random.randint(0, 100)
+                if letter < 80:
+                    letter = ' '
+                elif letter < 85:
+                    letter = 'k'
+                elif letter < 94:
+                    letter = 'w'
+                elif letter < 95:
+                    letter = 'E'
+                elif letter <= 100:
+                    letter = 'g'
+
+            default_map[j] += letter
+
+    return default_map
+
+
+Map[0] = random_map()
+
+
+
 def findAllGates(y, x):
     s = list(Map[level][y])
     s[x] = 'o'
@@ -120,6 +157,7 @@ def findAllGates(y, x):
     else:
         return y, x
 
+
 def next_level():
     global map_surface, walls, enemies, spawners, items, gates, bullets
 
@@ -129,6 +167,8 @@ def next_level():
     spawners = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
     map_surface = draw_map()
+
+
 def draw_map():
     global hero
     map_surface = pygame.Surface((32 * max(map(lambda row: len(row), Map[level])), 32 * len(Map[level])))
@@ -175,21 +215,205 @@ def draw_map():
     return map_surface
 
 
+def check_wall(x, y):
+    for wall in walls:
+        if wall.x // 32 == x and wall.y // 32 == y:
+            return False
+
+    return True
+
+
+def get_path(parents, point):
+    path = []
+    while point != [-1, -1]:
+        path.append(point)
+
+        point = parents[point[0]][point[1]][1]
+    path.reverse()
+    return path
+
+
+def uniform_cost_search(goal, start):
+    global map_surface, count
+    map_rect = map_surface.get_rect()
+    answer = [[] for i in range(len(goal))]
+
+    # create a priority queue
+    queue = [[0, start]]
+
+    # map to store visited node
+    visited = [[False for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    parents = [[[] for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    parents[start[0]][start[1]] = [0, [-1, -1]]
+    # count
+    count = 0
+
+    # while the queue is not empty
+    while len(queue) > 0:
+
+        # get the top element of the
+        queue = sorted(queue)
+
+        # print(queue)
+        # for pr in visited:
+        #     print(pr)
+        p = queue.pop()
+
+        # get the original value
+        p[0] *= -1
+
+        # check if the element is part of
+        # the goal list
+        if p[1] in goal:
+
+            # get the position
+            index = goal.index(p[1])
+
+            # if a new goal is reached
+            if len(answer[index]) == 0:
+                count += 1
+                answer[index] = get_path(parents, p[1])
+
+            # if the cost is less
+            if len(answer[index]) > p[0]:
+                answer[index] = get_path(parents, p[1])
+
+            # pop the element
+            del queue[-1]
+
+            queue = sorted(queue)
+            if count == len(goal):
+                return answer
+
+        # check for the non visited nodes
+        # which are adjacent to present node
+        if not visited[p[1][0]][p[1][1]]:
+
+            if check_wall(p[1][0] + 1, p[1][1]):
+                if [(p[0] + 1) * -1, [p[1][0] + 1, p[1][1]]] not in queue:
+                    queue.append([(p[0] + 1) * -1, [p[1][0] + 1, p[1][1]]])
+
+                if len(parents[p[1][0] + 1][p[1][1]]) == 0 or parents[p[1][0] + 1][p[1][1]][0] > \
+                        parents[p[1][0]][p[1][1]][0] + 1:
+                    parents[p[1][0] + 1][p[1][1]] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+
+            if check_wall(p[1][0], p[1][1] + 1):
+                if [(p[0] + 1) * -1, [p[1][0], p[1][1] + 1]] not in queue:
+                    queue.append([(p[0] + 1) * -1, [p[1][0], p[1][1] + 1]])
+                if len(parents[p[1][0]][p[1][1] + 1]) == 0 or parents[p[1][0]][p[1][1] + 1][0] > \
+                        parents[p[1][0]][p[1][1]][0] + 1:
+                    parents[p[1][0]][p[1][1] + 1] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+            if check_wall(p[1][0] - 1, p[1][1]):
+                if [(p[0] + 1) * -1, [p[1][0] - 1, p[1][1]]] not in queue:
+                    queue.append([(p[0] + 1) * -1, [p[1][0] - 1, p[1][1]]])
+                if len(parents[p[1][0] - 1][p[1][1]]) == 0 or parents[p[1][0] - 1][p[1][1]][0] > \
+                        parents[p[1][0]][p[1][1]][0] + 1:
+                    parents[p[1][0] - 1][p[1][1]] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+            if check_wall(p[1][0], p[1][1] - 1):
+                if [(p[0] + 1) * -1, [p[1][0], p[1][1] - 1]] not in queue:
+                    queue.append([(p[0] + 1) * -1, [p[1][0], p[1][1] - 1]])
+                if len(parents[p[1][0]][p[1][1] - 1]) == 0 or parents[p[1][0]][p[1][1] - 1][0] > \
+                        parents[p[1][0]][p[1][1]][0] + 1:
+                    parents[p[1][0]][p[1][1] - 1] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+        # mark as visited
+        visited[p[1][0]][p[1][1]] = True
+
+    return answer
+
+
+def dfs(goal, start):
+    global map_surface, count
+    map_rect = map_surface.get_rect()
+    answer = [[] for i in range(len(goal))]
+    par = [[[] for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    par[start[0]][start[1]] = [0, [-1, -1]]
+    count = 0
+
+    def dfs_recursive(parents, cur):
+        global count
+        if cur in goal:
+            index = goal.index(cur)
+            path = get_path(parents, cur)
+            count += 1
+            answer[index] = path
+
+            # if the cost is less
+
+        if len(goal) == count:
+            return
+            # pop the element
+
+        if check_wall(cur[0] + 1, cur[1]) and len(parents[cur[0] + 1][cur[1]]) == 0:
+            parents[cur[0] + 1][cur[1]] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            dfs_recursive(parents, [cur[0] + 1, cur[1]])
+            # parents[cur[0] + 1][cur[1]] = []
+        if check_wall(cur[0], cur[1] + 1) and len(parents[cur[0]][cur[1] + 1]) == 0:
+            parents[cur[0]][cur[1] + 1] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            dfs_recursive(parents, [cur[0], cur[1] + 1])
+            # parents[cur[0]][cur[1] + 1] = []
+        if check_wall(cur[0] - 1, cur[1]) and len(parents[cur[0] - 1][cur[1]]) == 0:
+            parents[cur[0] - 1][cur[1]] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            dfs_recursive(parents, [cur[0] - 1, cur[1]])
+            # parents[cur[0] - 1][cur[1]] = []
+        if check_wall(cur[0], cur[1] - 1) and len(parents[cur[0]][cur[1] - 1]) == 0:
+            parents[cur[0]][cur[1] - 1] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            dfs_recursive(parents, [cur[0], cur[1] - 1])
+            # parents[cur[0]][cur[1] - 1] = []
+
+    dfs_recursive(par, start)
+    return answer
+
+
+def bfs(goal, start):
+    global map_surface, count
+    map_rect = map_surface.get_rect()
+    answer = [[] for i in range(len(goal))]
+    parents = [[[] for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    parents[start[0]][start[1]] = [0, [-1, -1]]
+    queue = [start]
+    count = 0
+    while len(queue) != 0:
+        cur = queue.pop()
+        if cur in goal:
+            index = goal.index(cur)
+            path = get_path(parents, cur)
+            count += 1
+            answer[index] = path
+
+            # if the cost is less
+
+        if len(goal) == count:
+            return answer
+        if check_wall(cur[0] + 1, cur[1]) and len(parents[cur[0] + 1][cur[1]]) == 0:
+            parents[cur[0] + 1][cur[1]] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            queue.insert(0, [cur[0] + 1, cur[1]])
+        if check_wall(cur[0], cur[1] + 1) and len(parents[cur[0]][cur[1] + 1]) == 0:
+            parents[cur[0]][cur[1] + 1] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            queue.insert(0, [cur[0], cur[1] + 1])
+        if check_wall(cur[0] - 1, cur[1]) and len(parents[cur[0] - 1][cur[1]]) == 0:
+            parents[cur[0] - 1][cur[1]] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            queue.insert(0, [cur[0] - 1, cur[1]])
+        if check_wall(cur[0], cur[1] - 1) and len(parents[cur[0]][cur[1] - 1]) == 0:
+            parents[cur[0]][cur[1] - 1] = [parents[cur[0]][cur[1]][0] + 1, cur]
+            queue.insert(0, [cur[0], cur[1] - 1])
+    return answer
+
+
 def collide(rect1, rect2):
     if rect2.colliderect(rect1):
 
-        if 0 <= rect2.x - rect1.x + 32 <hero_type+4:
+        if 0 <= rect2.x - rect1.x + 32 < hero_type + 4:
             rect1.x = rect2.x + 32
-        elif 0 <= rect1.x - rect2.x + 32 < hero_type+4:
+        elif 0 <= rect1.x - rect2.x + 32 < hero_type + 4:
             rect1.x = rect2.x - 32
-        if 0 <= rect2.y - rect1.y + 32 < hero_type+4:
+        if 0 <= rect2.y - rect1.y + 32 < hero_type + 4:
             rect1.y = rect2.y + 32
-        elif 0 <= rect1.y - rect2.y + 32 < hero_type+4:
+        elif 0 <= rect1.y - rect2.y + 32 < hero_type + 4:
             rect1.y = rect2.y - 32
 
 
 def update():
-    global keys, potions, score, running, invulnerability, level
+    global keys, potions, score, running, invulnerability, level, map_surface
     screen.blit(map_surface, (0, 0))
     hero.update()
     for wall in walls:
@@ -230,8 +454,11 @@ def update():
             bullet = enemy.shoot()
             if bullet:
                 bullets.add(enemy.shoot())
-
+    finding_items = []
     for item in items:
+        if item.type == 5 or item.type == 12:
+            finding_items.append([item.rect.x // 32, item.rect.y // 32])
+
         if item.rect.colliderect(hero.rect):
             if item.type < 5:
                 hero.hp += 50
@@ -249,7 +476,29 @@ def update():
                 else:
                     next_level()
             item.kill()
-
+    paths = []
+    if finding_type == 0:
+        before = time.perf_counter()
+        paths = uniform_cost_search(finding_items,
+                                    [hero.rect.centerx // 32, hero.rect.centery // 32])
+        after = time.perf_counter()
+        if after-before < best_time[0]:
+            best_time[0] = after- before
+    elif finding_type == 1:
+        before = time.perf_counter()
+        paths = dfs(finding_items, [hero.rect.centerx // 32, hero.rect.centery // 32])
+        after = time.perf_counter()
+        if after - before < best_time[1]:
+            best_time[1] = after - before
+    elif finding_type == 2:
+        before = time.perf_counter()
+        paths = bfs(finding_items, [hero.rect.centerx // 32, hero.rect.centery // 32])
+        after = time.perf_counter()
+        if after - before < best_time[2]:
+            best_time[2] = after - before
+    for path in paths:
+        for point in path:
+            pygame.draw.rect(screen, (64, 128, 255), (point[0] * 32 + 4, point[1] * 32 + 4, 24, 24))
     bullets.update()
     for bullet in bullets:
         if bullet.type > 3:
@@ -290,11 +539,13 @@ def update():
     bullets.draw(screen)
     gates.draw(screen)
 
-    screen.blit(f.render('Score:' + str(score), 1, (255, 255, 255)), (16, 16))
-    screen.blit(f.render('Potions:' + str(potions), 1, (255, 255, 255)), (16, 48))
-    screen.blit(f.render('HP:' + str(hero.hp), 1, (255, 255, 255)), (16, 80))
-    screen.blit(f.render('Keys:' + str(keys), 1, (255, 255, 255)), (16, 112))
-
+    screen.blit(f.render('Score:' + str(score), 1, (255, 255, 255)), (900, 16))
+    screen.blit(f.render('Potions:' + str(potions), 1, (255, 255, 255)), (900, 48))
+    screen.blit(f.render('HP:' + str(hero.hp), 1, (255, 255, 255)), (900, 80))
+    screen.blit(f.render('Keys:' + str(keys), 1, (255, 255, 255)), (900, 112))
+    screen.blit(f.render('Finding alg:' + str(finding_type), 1, (255, 255, 255)), (900, 144))
+    for i in range(3):
+        screen.blit(f.render('Finding alg time '+str(i)+':' + str(best_time[i]), 1, (255, 255, 255)), (16, 400+32*(i+1)))
     if invulnerability > 0:
         invulnerability -= 1
 
@@ -302,7 +553,7 @@ def update():
 map_surface = draw_map()
 while running:
     screen.fill((0, 0, 0))
-    if hero.hp>0:
+    if hero.hp > 0:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -316,6 +567,10 @@ while running:
                     hero.setXChange(1)
                 if event.key == pygame.K_a:
                     hero.setXChange(-1)
+                if event.key == pygame.K_z:
+                    finding_type += 1
+                    if finding_type > 2:
+                        finding_type = 0
                 if event.key == pygame.K_SPACE:
                     bullets.add(hero.shoot())
                 if event.key == pygame.K_ESCAPE:
@@ -354,6 +609,6 @@ while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.blit(f.render('Score:'+str(score), 1, (255,255,255)), (160,160))
+        screen.blit(f.render('Score:' + str(score), 1, (255, 255, 255)), (160, 160))
     clock.tick(fps)
     pygame.display.update()
