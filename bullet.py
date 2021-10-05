@@ -4,7 +4,7 @@ bullets = pygame.image.load('images/entities.png')
 
 
 class Bullet(pygame.sprite.Sprite):
-    speed = 15
+    speed = 8
 
     def __init__(self, x, y, type, direction):
         pygame.sprite.Sprite.__init__(self)

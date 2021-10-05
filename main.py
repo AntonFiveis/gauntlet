@@ -1,10 +1,13 @@
+import math
+import random
+import time
+
 import pygame
-from hero import Hero
+
 from gate import Gate
+from hero import Hero
 from item import Item
 from spawner import Spawner
-import time
-import random
 
 pygame.init()
 f = pygame.font.SysFont('arial', 30)
@@ -21,11 +24,11 @@ screen = pygame.display.set_mode((width, height))
 running = True
 pygame.display.set_icon(heroIcon)
 
-best_time = [10**8,10**8,10**8]
+best_time = [10 ** 8, 10 ** 8, 10 ** 8]
 
 count = 0
 hero_type = -1
-finding_type = -1
+finding_type = 2
 keys = 0
 score = 0
 potions = 0
@@ -61,58 +64,66 @@ while hero_type == -1 and running:
     clock.tick(fps)
 walls = []
 Map = [[],[
+        'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww',
+        'w                               w',
+        'w h          k          b      Ew',
+        'w                               w',
+        'wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww'
+       ]
+
+    , [
+
     'wwwwwwwwwwwwwwwwwwww',
     'wh     k w E       wwwwwwww',
-    'w        w      G       www',
+    'w        w      g       www',
     'wwwwwwlllw              www',
-    'ws  B    wwwwwllllwwwwwwwww',
+    'ws     b wwwwwllllwwwwwwwww',
     'w        w                w',
     'ws       w           f    w',
     'w        w         wwwwwwww',
     'w                  ws    kw',
-    'w                  w  W   w',
+    'w                  w  d   w',
     'w        w  d      w      w',
-    'w  p    w w               w',
+    'w     p w w               w',
     'wwwwwwwwwwwwwwwwwwwwwwwwwww'
 ]
+       , [
+           'wwwwwwwwwwwwwwwwwwww',
+           'wh       wE        wwwwwwww',
+           'w        w      g       www',
+           'wwwwww   w              www',
+           'ws  b    wwwwwllllwwwwwwwww',
+           'w        w                w',
+           'ws       w     p     f    w',
+           'w   b    w         wwwwwwww',
+           'w            b     ws    kw',
+           'w    p             w  w   w',
+           'w        w  d      w      w',
+           'w  p    w w               w',
+           'wwwwwwwwwwwwwwwwwwwwwwwwwww'
+       ]
 
     , [
-        'wwwwwwwwwwwwwwwwwwww',
-        'wh       wE        wwwwwwww',
-        'w        w      G       www',
-        'wwwwww   w              www',
-        'ws  B    wwwwwllllwwwwwwwww',
-        'w        w                w',
-        'ws       w     p     f    w',
-        'w   B    w         wwwwwwww',
-        'w            B     ws    kw',
-        'w    p             w  W   w',
-        'w        w  d      w      w',
-        'w  p    w w               w',
-        'wwwwwwwwwwwwwwwwwwwwwwwwwww'
-    ]
-
-    , [
-        'wwwwwwwwwwwwwwwwwwww',
-        'wh       wf        wwwwwwww',
-        'w        w      G       www',
-        'w        w              www',
-        'ws   wwwwwwwww    wwwwwwwww',
-        'w    gg swww              w',
-        'wwwwww   wwwp        f    w',
-        'w d d     ww       wwwwwwww',
-        'w     b    w       ws    kw',
-        'w  d               w  W   w',
-        'w        w  d   l         w',
-        'w  p    w w               w',
-        'w                         w',
-        'wllllllwwwlllllwwwllllwwwww',
-        'w       G  G  G  G        w',
-        'w                         w',
-        'w         G G G           w',
-        'w           E             w',
-        'wwwwwwwwwwwwwwwwwwwwwwwwwww'
-    ]]
+           'wwwwwwwwwwwwwwwwwwww',
+           'wh       wf        wwwwwwww',
+           'w        w      G       www',
+           'w        w              www',
+           'ws   wwwwwwwww    wwwwwwwww',
+           'w    gg swww              w',
+           'wwwwww   wwwp        f    w',
+           'w d d     ww       wwwwwwww',
+           'w     b    w       ws    kw',
+           'w  d               w  w   w',
+           'w        w  d   l         w',
+           'w  p    w w               w',
+           'w                         w',
+           'wllllllwwwlllllwwwllllwwwww',
+           'w       G  G  G  G        w',
+           'w                         w',
+           'w         G G G           w',
+           'w           E             w',
+           'wwwwwwwwwwwwwwwwwwwwwwwwwww'
+       ]]
 
 
 def random_map():
@@ -120,16 +131,17 @@ def random_map():
     for j in range(13):
         for i in range(28):
             letter = ' '
-            if i == 0 or j ==0 or i==27 or j==12:
+            if i == 0 or j == 0 or i == 27 or j == 12:
                 letter = 'w'
-            elif i==1 and j==1:
+            elif i == 1 and j == 1:
                 letter = 'h'
             else:
                 letter = random.randint(0, 100)
                 if letter < 80:
                     letter = ' '
-                elif letter < 82:
-                    letter = 'k'
+                # elif letter < 85:
+                    # letter = 'k'
+
                 elif letter < 97:
                     letter = 'w'
                 elif letter < 98:
@@ -143,7 +155,6 @@ def random_map():
 
 
 Map[0] = random_map()
-
 
 
 def findAllGates(y, x):
@@ -166,6 +177,7 @@ def next_level():
     items = pygame.sprite.Group()
     spawners = pygame.sprite.Group()
     bullets = pygame.sprite.Group()
+    enemies = pygame.sprite.Group()
     map_surface = draw_map()
 
 
@@ -219,18 +231,76 @@ def check_wall(x, y):
     for wall in walls:
         if wall.x // 32 == x and wall.y // 32 == y:
             return False
-
+    for gate in gates:
+        if (gate.rect.x // 32 <= x <= (gate.rect.x + gate.rect.width) // 32) and (
+                gate.rect.y // 32 <= y <= (gate.rect.y + gate.rect.height) // 32) and keys==0:
+            return False
     return True
+
+
+# def check_bullet(x, y):
+#     # for bullet in bullets:
+#     #     if bullet.type < 4 and bullet.rect.x // 32 - 1 <= x <= bullet.rect.x // 32 + 1 and bullet.rect.y // 32 - 1 <= y <= bullet.rect.y // 32 + 1:
+#     #         return False
+#
+#     return True
 
 
 def get_path(parents, point):
     path = []
     while point != [-1, -1]:
         path.append(point)
-
         point = parents[point[0]][point[1]][1]
     path.reverse()
     return path
+
+
+def get_dist(point1, point2):
+    return math.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
+
+
+def a_star(goal, start):
+    global map_surface
+    map_rect = map_surface.get_rect()
+    answer = []
+    queue = [[0, start]]
+    visited = [[False for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    parents = [[[] for i in range(map_rect.height // 32)] for j in range(map_rect.width // 32)]
+    parents[start[0]][start[1]] = [0, [-1, -1]]
+    while len(queue) > 0:
+
+        # get the top element of the
+        queue = sorted(queue)
+
+        # print(queue)
+        # for pr in visited:
+        #     print(pr)
+        p = queue.pop()
+        if p[1] == goal:
+            answer = get_path(parents, p[1])
+            break
+        if not visited[p[1][0]][p[1][1]]:
+
+            if check_wall(p[1][0] + 1, p[1][1]):
+                queue.append([(p[0] + 1 + get_dist([p[1][0] + 1, p[1][1]], goal)) * -1, [p[1][0] + 1, p[1][1]]])
+
+                if len(parents[p[1][0] + 1][p[1][1]]) == 0:
+                    parents[p[1][0] + 1][p[1][1]] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+
+            if check_wall(p[1][0], p[1][1] + 1):
+                queue.append([(p[0] + 1 + get_dist([p[1][0], p[1][1] + 1], goal)) * -1, [p[1][0], p[1][1] + 1]])
+                if len(parents[p[1][0]][p[1][1] + 1]) == 0:
+                    parents[p[1][0]][p[1][1] + 1] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+            if check_wall(p[1][0] - 1, p[1][1]):
+                queue.append([(p[0] + 1 + get_dist([p[1][0] - 1, p[1][1]], goal)) * -1, [p[1][0] - 1, p[1][1]]])
+                if len(parents[p[1][0] - 1][p[1][1]]) == 0:
+                    parents[p[1][0] - 1][p[1][1]] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+            if check_wall(p[1][0], p[1][1] - 1):
+                queue.append([(p[0] + 1 + get_dist([p[1][0], p[1][1] - 1], goal)) * -1, [p[1][0], p[1][1] - 1]])
+                if len(parents[p[1][0]][p[1][1] - 1]) == 0:
+                    parents[p[1][0]][p[1][1] - 1] = [parents[p[1][0]][p[1][1]][0] + 1, p[1]]
+        visited[p[1][0]][p[1][1]] = True
+    return answer
 
 
 def uniform_cost_search(goal, start):
@@ -279,7 +349,7 @@ def uniform_cost_search(goal, start):
                 answer[index] = get_path(parents, p[1])
 
             # pop the element
-            del queue[-1]
+            # queue.pop()
 
             queue = sorted(queue)
             if count == len(goal):
@@ -415,6 +485,79 @@ def collide(rect1, rect2):
 def update():
     global keys, potions, score, running, invulnerability, level, map_surface
     screen.blit(map_surface, (0, 0))
+    finding_items = []
+    paths = []
+    for item in items:
+        if item.type == 5 or item.type == 12:
+            finding_items.append([item.rect.x // 32, item.rect.y // 32])
+
+        if item.rect.colliderect(hero.rect):
+            if item.type < 5:
+                hero.hp += 50
+            elif item.type == 5:
+                keys = keys + 1
+            elif item.type == 6:
+                potions = potions + 1
+            elif item.type < 10:
+                score = score + 100
+            elif item.type == 12:
+                level += 1
+
+                if level > 3:
+                    running = False
+                else:
+                    next_level()
+            item.kill()
+    if finding_type == 0:
+        before = time.perf_counter()
+        paths = uniform_cost_search(finding_items,
+                                    [hero.rect.x // 32, hero.rect.y // 32])
+        after = time.perf_counter()
+        if after - before < best_time[0]:
+            best_time[0] = after - before
+    elif finding_type == 1:
+        before = time.perf_counter()
+        paths = dfs(finding_items, [hero.rect.x // 32, hero.rect.y // 32])
+        after = time.perf_counter()
+        if after - before < best_time[1]:
+            best_time[1] = after - before
+    elif finding_type == 2:
+        before = time.perf_counter()
+        paths = bfs(finding_items, [hero.rect.x // 32, hero.rect.y // 32])
+        after = time.perf_counter()
+        if after - before < best_time[2]:
+            best_time[2] = after - before
+    elif finding_type == 3:
+        for fi in finding_items:
+            paths.append(a_star(fi, [hero.rect.x // 32, hero.rect.y // 32]))
+
+    # for path in paths:
+    #     for point in path:
+    #         pygame.draw.rect(screen, (64, 128, 255), (point[0] * 32 + 4, point[1] * 32 + 4, 24, 24))
+
+    paths = [path for path in paths if path]
+    if (len(paths) != 0):
+        if len(paths[0]) >= 2:
+            if hero.rect.x < paths[0][1][0] * 32 :
+                hero.setXChange(1)
+            elif hero.rect.x > paths[0][1][0] * 32:
+                hero.setXChange(-1)
+            else:
+                hero.setXChange(0)
+            if hero.rect.y < paths[0][1][1] * 32:
+                hero.setYChange(1)
+            elif hero.rect.y > paths[0][1][1] * 32:
+                hero.setYChange(-1)
+            else:
+                hero.setYChange(0)
+        else:
+            hero.setYChange(0)
+            hero.setXChange(0)
+    randint = random.randint(0, 100)
+    if randint > 93:
+        bullet = hero.shoot()
+        if bullet:
+            bullets.add(hero.shoot())
     hero.update()
     for wall in walls:
         collide(hero.rect, wall)
@@ -454,51 +597,7 @@ def update():
             bullet = enemy.shoot()
             if bullet:
                 bullets.add(enemy.shoot())
-    finding_items = []
-    for item in items:
-        if item.type == 5 or item.type == 12:
-            finding_items.append([item.rect.x // 32, item.rect.y // 32])
 
-        if item.rect.colliderect(hero.rect):
-            if item.type < 5:
-                hero.hp += 50
-            elif item.type == 5:
-                keys = keys + 1
-            elif item.type == 6:
-                potions = potions + 1
-            elif item.type < 10:
-                score = score + 100
-            elif item.type == 12:
-                level += 1
-
-                if level > 2:
-                    running = False
-                else:
-                    next_level()
-            item.kill()
-    paths = []
-    if finding_type == 0:
-        before = time.perf_counter()
-        paths = uniform_cost_search(finding_items,
-                                    [hero.rect.centerx // 32, hero.rect.centery // 32])
-        after = time.perf_counter()
-        if after-before < best_time[0]:
-            best_time[0] = after- before
-    elif finding_type == 1:
-        before = time.perf_counter()
-        paths = dfs(finding_items, [hero.rect.centerx // 32, hero.rect.centery // 32])
-        after = time.perf_counter()
-        if after - before < best_time[1]:
-            best_time[1] = after - before
-    elif finding_type == 2:
-        before = time.perf_counter()
-        paths = bfs(finding_items, [hero.rect.centerx // 32, hero.rect.centery // 32])
-        after = time.perf_counter()
-        if after - before < best_time[2]:
-            best_time[2] = after - before
-    for path in paths:
-        for point in path:
-            pygame.draw.rect(screen, (64, 128, 255), (point[0] * 32 + 4, point[1] * 32 + 4, 24, 24))
     bullets.update()
     for bullet in bullets:
         if bullet.type > 3:
@@ -545,7 +644,8 @@ def update():
     screen.blit(f.render('Keys:' + str(keys), 1, (255, 255, 255)), (900, 112))
     screen.blit(f.render('Finding alg:' + str(finding_type), 1, (255, 255, 255)), (900, 144))
     for i in range(3):
-        screen.blit(f.render('Finding alg time '+str(i)+':' + str(best_time[i]), 1, (255, 255, 255)), (16, 400+32*(i+1)))
+        screen.blit(f.render('Finding alg time ' + str(i) + ':' + str(best_time[i]), 1, (255, 255, 255)),
+                    (16, 400 + 32 * (i + 1)))
     if invulnerability > 0:
         invulnerability -= 1
 
@@ -554,6 +654,7 @@ map_surface = draw_map()
 while running:
     screen.fill((0, 0, 0))
     if hero.hp > 0:
+        update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -569,10 +670,10 @@ while running:
                     hero.setXChange(-1)
                 if event.key == pygame.K_z:
                     finding_type += 1
-                    if finding_type > 2:
+                    if finding_type > 3:
                         finding_type = 0
-                if event.key == pygame.K_SPACE:
-                    bullets.add(hero.shoot())
+                # if event.key == pygame.K_SPACE:
+                #     bullets.add(hero.shoot())
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 if event.key == pygame.K_f:
@@ -584,6 +685,7 @@ while running:
                             if explosion.colliderect(enemy.rect):
                                 enemy.kill()
             elif event.type == pygame.KEYUP:
+
                 if event.key == pygame.K_w or event.key == pygame.K_s:
                     hero.setYChange(0)
                 if event.key == pygame.K_d or event.key == pygame.K_a:
@@ -591,20 +693,42 @@ while running:
             elif event.type == pygame.USEREVENT:
                 for spawner in spawners:
                     enemies.add(spawner.spawn())
+
         for enemy in enemies:
-            if enemy.rect.x < hero.rect.x - 16:
-                enemy.setXChange(1)
-            elif enemy.rect.x > hero.rect.x + 16:
-                enemy.setXChange(-1)
-            else:
-                enemy.setXChange(0)
-            if enemy.rect.y < hero.rect.y - 16:
-                enemy.setYChange(1)
-            elif enemy.rect.y > hero.rect.y + 16:
-                enemy.setYChange(-1)
+            path = a_star([hero.rect.centerx // 32, hero.rect.centery // 32],
+                          [enemy.rect.centerx // 32, enemy.rect.centery // 32])
+
+            # for point in path:
+            #     pygame.draw.rect(screen, (255, 128, 255), (point[0] * 32 + 4, point[1] * 32 + 4, 24, 24))
+
+            if len(path) > 2:
+                if enemy.rect.x < path[1][0] * 32 - 8:
+                    enemy.setXChange(1)
+                elif enemy.rect.x > path[1][0] * 32 + 8:
+                    enemy.setXChange(-1)
+                else:
+                    enemy.setXChange(0)
+                if enemy.rect.y < path[1][1] * 32 - 8:
+                    enemy.setYChange(1)
+                elif enemy.rect.y > path[1][1] * 32 + 8:
+                    enemy.setYChange(-1)
+                else:
+                    enemy.setYChange(0)
             else:
                 enemy.setYChange(0)
-        update()
+                enemy.setXChange(0)
+            direction_move = [
+                [1, 0], [-1, 0], [0, 1], [0, -1], [-1, 0], [1, 0], [0, -1], [1, 0]
+            ]
+            for bullet in bullets:
+                if bullet.type < 4:
+                    if get_dist([bullet.rect.x // 32, bullet.rect.y // 32],
+                                [enemy.rect.x // 32, enemy.rect.y // 32]) < 3:
+                        x, y = direction_move[bullet.direction]
+                        enemy.setXChange(x)
+                        enemy.setYChange(y)
+
+
     else:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
