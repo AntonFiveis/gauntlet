@@ -15,8 +15,8 @@
 
 (for [x map] (print x))
 
-(defn evaluate[x y temp_score]
-    (+ (math.sqrt (+ (math.pow (- 4 x) 2) (math.pow (- 4 y) 2))) temp_score)
+(defn evaluate[x y e_x e_y temp_score]
+    (+ (math.sqrt (+ (math.pow (- 4 x) 2) (math.pow (- 4 y) 2))) temp_score (math.sqrt (+ (math.pow (- x e_x) 2) (math.pow (- y e_y) 2))) )
 )
 (defn find_moves_from_tree[^"Node" n depth]
     (setv move_node [[n.x n.y]])
@@ -34,10 +34,10 @@
     (return move_node)
 )
 (defn generate_minimax_tree_recurs[^"Node" max_player ^"Node" min_player depth temp_score]
-    (if (> depth 4)
+    (if (> depth 3)
         (do
-            (max_player.set_score (evaluate max_player.x max_player.y temp_score))
-            (return max_player))
+            (min_player.set_score (evaluate max_player.x max_player.y min_player.x min_player.y temp_score))
+            (return min_player))
     )
     (if (= (% depth 2) 0)
         (do
@@ -77,5 +77,48 @@
 )
 )
 
+(defn minimax[^"Node" n depth alpha beta]
+    (if (> depth 3)
+    (do
+    (return (n.get_score)))
+    (do
+    (if (= (% depth 2) 0)
+    (do
+        (setv best_val -100000)
+        (for [neighbor (n.get_neighbors)]
+            (do
+                (setv value (minimax neighbor (+ 1 depth) alpha beta))
+                (if (> value best_val)
+                (setv best_val value))
+                (setv alpha (max alpha best_val))
+                (if (<= beta alpha)
+                (break))
+
+            )
+        )
+        (n.set_score best_val)
+        (return best_val)
+    )
+    (do
+    (setv best_val 100000)
+        (for [neighbor (n.get_neighbors)]
+            (do
+                (setv value (minimax neighbor (+ 1 depth) alpha beta))
+                (if (< value best_val)
+                (setv best_val value))
+                (setv beta (min beta best_val))
+                (if (<= beta alpha)
+                (break))
+            )
+        )
+        (n.set_score best_val)
+        (return best_val)
+    )
+    )
+
+    ))
+)
+
 (setv tree (generate_minimax_tree_recurs (node.Node 0 2) (node.Node 3 2) 0 0))
+(minimax tree 0 -100000 100000)
 (print (find_moves_from_tree tree 0))
