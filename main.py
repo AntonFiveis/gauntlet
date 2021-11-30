@@ -3,7 +3,6 @@ import random
 import time
 import csv
 import pygame
-import copy
 from gate import Gate
 from hero import Hero
 from item import Item
@@ -42,7 +41,7 @@ turns = 3
 minimax_moves = []
 nearest_enemy = None
 enemy_count = 0
-enemy_intel = random.randint(0,10)%2==0
+enemy_intel = False
 random_moves = {}
 
 enemies = pygame.sprite.Group()
@@ -228,22 +227,26 @@ def findAllGates(y, x):
         return findAllGates(y + 1, x)
     else:
         return y, x
+
+
 def append_to_csv(filename, time, score, win):
-    alg=''
+    alg = ''
     if enemy_intel:
-        alg='minimax'
-    else: alg = 'expectimax'
-    fields = [ win, time, score, alg]
+        alg = 'minimax'
+    else:
+        alg = 'expectimax'
+    fields = [win, time, score, alg]
     with open(filename, 'a', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(fields)
+
 
 def next_level():
     global map_surface, walls, enemies, spawners, items, gates, bullets, parents, score, before
     after = time.perf_counter()
 
     score += 1000
-    append_to_csv('output.csv', after-before, score, True)
+    append_to_csv('output.csv', after - before, score, True)
     walls = []
     gates = pygame.sprite.Group()
     items = pygame.sprite.Group()
@@ -600,7 +603,7 @@ def update():
     screen.blit(map_surface, (0, 0))
     finding_items = []
     paths = []
-    if turns > 1 or len(minimax_moves) <2:
+    if turns > 1 or len(minimax_moves) < 2:
         tree = None
         nearest_enemy = find_nearest_enemy([hero.rect.x // 32, hero.rect.y // 32])
         if nearest_enemy:
@@ -778,7 +781,6 @@ def update():
                     enemy.setYChange(move[turns][1])
             except:
                 print('')
-
 
         collide(hero.rect, enemy.rect)
 
@@ -1001,9 +1003,9 @@ parents = mark_all_positions(exit_coords)
 before = time.perf_counter()
 while running:
     screen.fill((0, 0, 0))
-    if score< -400:
+    if score < -400:
         after = time.perf_counter()
-        append_to_csv('output.csv', after-before, score, False)
+        append_to_csv('output.csv', after - before, score, False)
         break
     if hero.hp > 0:
         update()

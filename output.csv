@@ -31,3 +31,6 @@ True,5.190213399999999,707,expectimax
 False,6.9454941,-401,minimax
 True,6.436210399999999,631,minimax
 True,5.4375924,708,expectimax
+True,5.0156864,708,expectimax
+True,6.319142199999999,636,minimax
+True,5.2716146,708,expectimax

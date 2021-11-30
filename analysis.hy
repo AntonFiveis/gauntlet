@@ -9,9 +9,6 @@
 (defn split_data [data]
     [(data.drop "score" :axis 1) data.score])
 
-
-
-
 (setv data (pd.read_csv "output.csv" ))
 (print (data.head))
 
@@ -19,12 +16,8 @@
 (cut data 0 4))
 (setv train_data (cut data 4 (len data)))
 
-
-
-
 (setv x (get (split_data train_data) 0))
 (setv y (get (split_data train_data) 1))
-
 
 (setv split (train_test_split x y :test_size 0.2 :shuffle True))
 (setv x_train (get split 0))
@@ -32,25 +25,21 @@
 (setv y_train (get split 2))
 (setv y_valid (get split 3))
 
-
 (setv cat_cols ["win" "alg"])
 (setv encoder (OrdinalEncoder))
 (assoc x_train cat_cols (encoder.fit_transform (get x_train cat_cols)))
 (assoc x_valid cat_cols (encoder.transform (get x_valid cat_cols)))
-
 
 (setv model (LinearRegression))
 (model.fit x_train y_train)
 (print model.coef_)
 (print (+ "R2 score:" (str (model.score x_valid  y_valid))))
 
-
 (setv x_test (get (split_data test_data) 0))
 (setv y_test (get (split_data test_data) 1))
 (assoc x_test cat_cols (encoder.transform (get x_test cat_cols)))
 (setv y_pred (model.predict x_test))
 (print y_pred)
-
 
 (setv stats (pd.DataFrame {
     "prediction" (np.abs (- y_test y_pred))
